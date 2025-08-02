@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NIRANJAN CREATIONS</title>
+    <meta charset="UTF-8">
+    <link rel="manifest" href="db.json">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+    <style>
+.rotate{                                                                                                               animation : spin 2s linear infinite;                                                                   }                                                                                                              @keyframes spin {
+        0%{
+                transform:rotateY(0deg);
+        }
+        100%{
+                transform:rotateY(360deg);                                                                             }
+}
+        body {
+            background:black;
+            color: lime ;
+            font-family: monospace;
+            padding: 10px;
+        }
+        #terminal {
+            background-color: #111;
+            color:lime;
+            padding: 10px;
+            height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .prompt {
+            display: inline;
+        }
+        .command-input {
+                font-size:20px;
+            background: transparent;
+            color:cyan;
+            border: none;
+            outline: none;
+            width: 80%;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+        <marquee direction="right" behaviour="scroll" scrollamount="15" style="color:yellow;background-color:maroon;font-size:35px;">KNI DATA BASE WORKS WITH SQL</marquee>
+        <center>
+                <h1 style="color:orange;">SQL THROUGH KNI</h1>
+        <img src="https://hacker1514.github.io/python/kni.png" width="100px" height="100px" class= rotate style="border-radius:50%;border:solid red;">
+        </center>
+        <button style="border:solid red;color:lime;background-color:teal;font-size:20px;" onclick="install();">INSTALL INTO YOUR SYSTEM</button>
+    <div style="font-size:20px;" id="terminal"></div>
+    <audio src="https://github.com/Niranjan164/COMPILER/raw/main/click-151673_073339.mp3" id="m"></audio>
+    <script>
+            let music=document.getElementById("m");
+            let p;                                                                                                         window.addEventListener('beforeinstallprompt',e=>{                                                                     e.preventDefault();                                                                                            p=e;                                                                                                   });                                                                                                            function install(){                                                                                                    music.play();                                                                                                  if(p){                                                                                                                 p.prompt();                                                                                            }                                                                                                      }                                                                                                              if('serviceWorker' in navigator){
+        navigator.serviceWorker.register('db.js');                                                                 }
+        let db;
+        let history = [];
+        let historyIndex = -1;
+
+        function addPrompt() {
+            const terminal = document.getElementById("terminal");
+            const line = document.createElement("div");
+            line.innerHTML = `<span class='prompt' style="color:yellow;">Ksql&gt; </span>`;
+            const input = document.createElement("input");
+            input.type = "text";
+            input.className = "command-input";
+            line.appendChild(input);
+            terminal.appendChild(line);
+            input.focus();
+
+            input.addEventListener("keydown", function(event) {
+                if (event.key === "Enter") {
+                        music.play();
+                    event.preventDefault();
+                    const command = this.value.trim();
+                    if (command !== "") {
+                        history.push(command);
+                        historyIndex = history.length;
+                        executeSQL(command, line);
+                    } else {
+                        addPrompt();
+                    }
+                }
+                if (event.key === "ArrowUp") {
+                    if (historyIndex > 0) {
+                        historyIndex--;
+                        this.value = history[historyIndex];
+                    }
+                }
+                if (event.key === "ArrowDown") {
+                    if (historyIndex < history.length - 1) {
+                        historyIndex++;
+                        this.value = history[historyIndex];
+                    } else {
+                        this.value = "";
+                    }
+                }
+            });
+        }
+
+        function executeSQL(query, line) {
+            let outputText = "";
+            try {
+                const result = db.exec(query);
+                if (result.length > 0) {
+                    result.forEach(table => {
+                        outputText += table.columns.join(" | ") + "\n";
+                        outputText += "-".repeat(table.columns.join(" | ").length) + "\n";
+                        table.values.forEach(row => {
+                            outputText += row.join(" | ") + "\n";
+                        });
+                    });
+                } else {
+                    outputText = "NIRANJAN data base accepted ";
+                }
+            } catch (e) {
+                outputText = "Error: " + e.message;
+            }
+
+            line.querySelector("input").disabled = true;
+
+            const out = document.createElement("div");
+            out.textContent = outputText;
+            document.getElementById("terminal").appendChild(out);
+
+            addPrompt();
+            document.getElementById("terminal").scrollTop = document.getElementById("terminal").scrollHeight;
+        }
+
+        initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}` })
+        .then(SQL => {
+            db = new SQL.Database();
+            const term = document.getElementById("terminal");
+            //term.textContent = "\n";
+            addPrompt();
+        });
+    </script>
+</body>
+</html>
