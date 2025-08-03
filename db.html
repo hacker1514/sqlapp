@@ -48,10 +48,15 @@
         <img src="https://hacker1514.github.io/python/kni.png" width="100px" height="100px" class= rotate style="border-radius:50%;border:solid red;">
         </center>
         <button style="border:solid red;color:lime;background-color:teal;font-size:20px;" onclick="install();">INSTALL INTO YOUR SYSTEM</button>
+        <button style="border:solid yellow;color:lime;background-color:teal;font-size:20px;" onclick="reload();">REFRESH</button>
     <div style="font-size:20px;" id="terminal"></div>
     <audio src="https://github.com/Niranjan164/COMPILER/raw/main/click-151673_073339.mp3" id="m"></audio>
     <script>
             let music=document.getElementById("m");
+        function reload(){
+            music.play();
+            location.reload();
+        }
             let p;                                                                                                         window.addEventListener('beforeinstallprompt',e=>{                                                                     e.preventDefault();                                                                                            p=e;                                                                                                   });                                                                                                            function install(){                                                                                                    music.play();                                                                                                  if(p){                                                                                                                 p.prompt();                                                                                            }                                                                                                      }                                                                                                              if('serviceWorker' in navigator){
         navigator.serviceWorker.register('db.js');                                                                 }
         let db;
