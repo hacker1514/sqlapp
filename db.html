@@ -145,7 +145,10 @@
                     "4.save => to save your database in a file\n" +
                     "5.add => to add data from an existing .db file\n" +
                     "6.tables => to show all tables\n" +
-                    "7.help => to see all commands\n" +
+                    "7.contact => talk with developer\n" +
+                    "8.request => to adding new commands\n" +
+                    "9.feedback => to providing feedback to developer \n" +
+                    "10.help => to see all commands\n" +
                     ".......work is going on ......";
                 addPrompt();
                 return;
@@ -211,7 +214,18 @@
                 alert("Exit manually\nYour system is not supporting automatic exit.");
                 return;
             }
-
+                if (lowerQuery === "request") {
+                window.open("https://hacker1514.github.io/python/contact.html","_self");
+                return;
+            }
+                if (lowerQuery === "contact") {
+                window.open("https://hacker1514.github.io/python/contact.html","_self");
+                return;
+            }
+                if (lowerQuery === "feedback") {
+                window.open("https://hacker1514.github.io/python/feedback.html","_self");
+                return;
+            }
             if (lowerQuery.startsWith("describe table")) {
                 let parts = query.trim().split(/\s+/);
                 if (parts.length === 3) {
