@@ -6,22 +6,22 @@
     <link rel="manifest" href="db.json">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
     <style>
-.rotate{                                                                                                               animation : spin 2s linear infinite;                                                                   }                                                                                                              @keyframes spin {
-        0%{
-                transform:rotateY(0deg);
+        .rotate {
+            animation: spin 2s linear infinite;
         }
-        100%{
-                transform:rotateY(360deg);                                                                             }
-}
+        @keyframes spin {
+            0% { transform: rotateY(0deg); }
+            100% { transform: rotateY(360deg); }
+        }
         body {
-            background:black;
-            color: lime ;
+            background: black;
+            color: lime;
             font-family: monospace;
             padding: 10px;
         }
         #terminal {
             background-color: #111;
-            color:lime;
+            color: lime;
             padding: 10px;
             height: 400px;
             overflow-y: auto;
@@ -31,37 +31,57 @@
             display: inline;
         }
         .command-input {
-                font-size:20px;
+            font-size: 20px;
             background: transparent;
-            color:cyan;
+            color: cyan;
             border: none;
             outline: none;
             width: 80%;
             font-family: monospace;
+            text-transform: none;
         }
     </style>
 </head>
 <body>
-        <marquee direction="right" behaviour="scroll" scrollamount="15" style="color:yellow;background-color:maroon;font-size:35px;">KNI DATA BASE WORKS WITH SQL</marquee>
-        <center>
-                <h1 style="color:orange;">SQL THROUGH KNI</h1>
-        <img src="https://hacker1514.github.io/python/kni.png" width="100px" height="100px" class= rotate style="border-radius:50%;border:solid red;">
-        </center>
-        <button style="border:solid red;color:lime;background-color:teal;font-size:20px;" onclick="install();">INSTALL INTO YOUR SYSTEM</button>
-        <button style="border:solid yellow;color:lime;background-color:teal;font-size:20px;" onclick="reload();">REFRESH</button>
-    <div style="font-size:20px;" id="terminal" autocapitalize='off'></div>
+    <marquee direction="right" behaviour="scroll" scrollamount="15" style="color:yellow;background-color:maroon;font-size:35px;">
+        KNI DATA BASE WORKS WITH SQL
+    </marquee>
+    <center>
+        <h1 style="color:orange;">SQL THROUGH KNI</h1>
+        <img src="https://hacker1514.github.io/python/kni.png" width="100px" height="100px" class="rotate" style="border-radius:50%;border:solid red;">
+    </center>
+    <button style="border:solid red;color:lime;background-color:teal;font-size:20px;" onclick="install();">INSTALL INTO YOUR SYSTEM</button>
+    <button style="border:solid yellow;color:lime;background-color:teal;font-size:20px;" onclick="reload();">REFRESH</button>
+    <div style="font-size:20px;" id="terminal"></div>
+    <input type="file" id="addDBInput" accept=".db" style="display:none" />
     <audio src="https://github.com/Niranjan164/COMPILER/raw/main/click-151673_073339.mp3" id="m"></audio>
+
+    <script src="add.js"></script>
+
     <script>
-            let music=document.getElementById("m");
-        function reload(){
-            music.play();
-            location.reload();
-        }
-            let p;                                                                                                         window.addEventListener('beforeinstallprompt',e=>{                                                                     e.preventDefault();                                                                                            p=e;                                                                                                   });                                                                                                            function install(){                                                                                                    music.play();                                                                                                  if(p){                                                                                                                 p.prompt();                                                                                            }                                                                                                      }                                                                                                              if('serviceWorker' in navigator){
-        navigator.serviceWorker.register('db.js');                                                                 }
+        let music = document.getElementById("m");
+        let SQL; // Global SQL library variable
         let db;
         let history = [];
         let historyIndex = -1;
+
+        function reload() {
+            music.play();
+            location.reload();
+        }
+
+        let p;
+        window.addEventListener('beforeinstallprompt', e => {
+            e.preventDefault();
+            p = e;
+        });
+        function install() {
+            music.play();
+            if (p) { p.prompt(); }
+        }
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('db.js');
+        }
 
         function addPrompt() {
             const terminal = document.getElementById("terminal");
@@ -70,13 +90,15 @@
             const input = document.createElement("input");
             input.type = "text";
             input.className = "command-input";
+            input.setAttribute("autocapitalize", "off");
+            input.setAttribute("autocorrect", "off");
             line.appendChild(input);
             terminal.appendChild(line);
             input.focus();
 
             input.addEventListener("keydown", function(event) {
                 if (event.key === "Enter") {
-                        music.play();
+                    music.play();
                     event.preventDefault();
                     const command = this.value.trim();
                     if (command !== "") {
@@ -106,6 +128,131 @@
 
         function executeSQL(query, line) {
             let outputText = "";
+            let lowerQuery = query.trim().toLowerCase();
+
+            if (lowerQuery === "clear") {
+                document.getElementById("terminal").innerHTML = "";
+                addPrompt();
+                return;
+            }
+
+            if (lowerQuery === "help") {
+                document.getElementById("terminal").innerHTML =
+                    "commands added:\n" +
+                    "1.clear => to clear screen\n" +
+                    "2.describe table => to get structure of table\n" +
+                    "3.exit => to exit terminal\n" +
+                    "4.save => to save your database in a file\n" +
+                    "5.add => to add data from an existing .db file\n" +
+                    "6.tables => to show all tables\n" +
+                    "7.help => to see all commands\n" +
+                    ".......work is going on ......";
+                addPrompt();
+                return;
+            }
+
+            if (lowerQuery === "tables") {
+                try {
+                    const result = db.exec("SELECT name FROM sqlite_master WHERE type='table';");
+                    if (result.length > 0 && result[0].values.length > 0) {
+                        outputText = "Tables:\n";
+                        result[0].values.forEach(row => {
+                            outputText += "- " + row[0] + "\n";
+                        });
+                    } else {
+                        outputText = "No tables found in the database.";
+                    }
+                } catch (e) {
+                    outputText = "Error: " + e.message;
+                }
+                line.querySelector("input").disabled = true;
+                const out = document.createElement("div");
+                out.textContent = outputText;
+                document.getElementById("terminal").appendChild(out);
+                addPrompt();
+                return;
+            }
+
+            if (lowerQuery.startsWith("save ")) {
+                const parts = query.trim().split(/\s+/);
+                if (parts.length === 2) {
+                    let filename = parts[1];
+                    if (!filename.endsWith(".db")) {
+                        filename += ".db";
+                    }
+                    const data = db.export();
+                    const blob = new Blob([data], { type: "application/octet-stream" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+
+                    line.querySelector("input").disabled = true;
+                    const out = document.createElement("div");
+                    out.textContent = `Database saved as "${filename}"`;
+                    document.getElementById("terminal").appendChild(out);
+                    addPrompt();
+                    return;
+                } else {
+                    line.querySelector("input").disabled = true;
+                    const out = document.createElement("div");
+                    out.textContent = `Usage: save filename.db`;
+                    document.getElementById("terminal").appendChild(out);
+                    addPrompt();
+                    return;
+                }
+            }
+
+            if (lowerQuery === "exit") {
+                alert("Exit manually\nYour system is not supporting automatic exit.");
+                return;
+            }
+
+            if (lowerQuery.startsWith("describe table")) {
+                let parts = query.trim().split(/\s+/);
+                if (parts.length === 3) {
+                    let tableName = parts[2];
+                    try {
+                        const result = db.exec(`PRAGMA table_info(${tableName});`);
+                        if (result.length > 0 && result[0].values.length > 0) {
+                            outputText = "Column Name | Type | Not Null | Default Value | Primary Key\n";
+                            outputText += "-".repeat(outputText.length) + "\n";
+                            result[0].values.forEach(row => {
+                                outputText += row.join(" | ") + "\n";
+                            });
+                        } else {
+                            outputText = "Error: Table '" + tableName + "' does not exist.";
+                        }
+                    } catch (e) {
+                        outputText = "Error: " + e.message;
+                    }
+                } else {
+                    outputText = "Usage: describe table table_name";
+                }
+                line.querySelector("input").disabled = true;
+                const out = document.createElement("div");
+                out.textContent = outputText;
+                document.getElementById("terminal").appendChild(out);
+                addPrompt();
+                return;
+            }
+
+            if (lowerQuery === "add") {
+                if (typeof addCommand === "function") {
+                    addCommand(line);
+                } else {
+                    const out = document.createElement("div");
+                    out.textContent = "Add command is not loaded.";
+                    document.getElementById("terminal").appendChild(out);
+                    addPrompt();
+                }
+                return;
+            }
+
             try {
                 const result = db.exec(query);
                 if (result.length > 0) {
@@ -117,27 +264,26 @@
                         });
                     });
                 } else {
-                    outputText = "NIRANJAN data base accepted ";
+                    outputText = "NIRANJAN data base accepted";
                 }
             } catch (e) {
                 outputText = "Error: " + e.message;
             }
 
             line.querySelector("input").disabled = true;
-
             const out = document.createElement("div");
             out.textContent = outputText;
             document.getElementById("terminal").appendChild(out);
-
             addPrompt();
             document.getElementById("terminal").scrollTop = document.getElementById("terminal").scrollHeight;
         }
 
         initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}` })
-        .then(SQL => {
+        .then(SQLLib => {
+            SQL = SQLLib;
             db = new SQL.Database();
-            const term = document.getElementById("terminal");
-            //term.textContent = "\n";
+            const welcomeMsg = `type help, to see all commands`;
+            document.getElementById("terminal").textContent = welcomeMsg + "\n\n";
             addPrompt();
         });
     </script>
