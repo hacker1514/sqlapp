@@ -148,7 +148,8 @@
                     "7.contact => talk with developer\n" +
                     "8.request => to adding new commands\n" +
                     "9.feedback => to providing feedback to developer \n" +
-                    "10.help => to see all commands\n" +
+                    "10.ask => ask your doubts\n"+
+                    "11.help => to see all commands\n" +
                     ".......work is going on ......";
                 addPrompt();
                 return;
@@ -226,6 +227,53 @@
                 window.open("https://hacker1514.github.io/python/feedback.html","_self");
                 return;
             }
+                //here
+                if (lowerQuery.startsWith("ask ")) {
+    let match = query.match(/^ask\s+"(.+)"$/i);
+    const out = document.createElement("div");
+
+    if (!match) {
+        out.textContent = 'Usage: ask "your question"';
+        document.getElementById("terminal").appendChild(out);
+        addPrompt();
+        return;
+    }
+
+    let userPrompt = match[1];
+    out.textContent = "LOADING...";
+    document.getElementById("terminal").appendChild(out);
+
+    fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer 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`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            model: "llama3-8b-8192",
+            messages: [
+                { role: "system", content: "Return only the single most important point from the user's message. No extra explanation." },
+                { role: "user", content: userPrompt }
+            ],
+            max_tokens: 50,
+            temperature: 0
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        let aiReply = data?.choices?.[0]?.message?.content?.trim() || "ASK Ksql RELATED THINGS....";
+        out.textContent = `${aiReply}`;
+        addPrompt();
+        document.getElementById("terminal").scrollTop = document.getElementById("terminal").scrollHeight;
+    })
+    .catch(err => {
+        out.textContent = "Error: " + err;
+        addPrompt();
+    });
+
+    return;
+}
+        //upto
             if (lowerQuery.startsWith("describe table")) {
                 let parts = query.trim().split(/\s+/);
                 if (parts.length === 3) {
@@ -300,6 +348,7 @@
             document.getElementById("terminal").textContent = welcomeMsg + "\n\n";
             addPrompt();
         });
+
     </script>
 </body>
 </html>
