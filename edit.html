@@ -29,7 +29,7 @@
         let a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
         let file=prompt("Enter File name:\n");
-        a.download = file+".sql";
+        a.download = file+".Ksql";
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
