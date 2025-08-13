@@ -141,15 +141,16 @@
                     "commands added:\n" +
                     "1.clear => to clear screen\n" +
                     "2.describe table => to get structure of table\n" +
-                    "3.exit => to exit terminal\n" +
-                    "4.save => to save your database in a file\n" +
-                    "5.add => to add data from an existing .db file\n" +
-                    "6.tables => to show all tables\n" +
-                    "7.contact => talk with developer\n" +
-                    "8.request => to adding new commands\n" +
-                    "9.feedback => to providing feedback to developer \n" +
-                    "10.ask => ask your doubts\n"+
-                    "11.help => to see all commands\n" +
+                    "3.save => to save your database in a file\n" +
+                    "4.add => to add data from an existing .db file\n" +
+                    "5.tables => to show all tables\n" +
+                    "6.contact => talk with developer\n" +
+                    "7.request => to adding new commands\n" +
+                    "8.feedback => to providing feedback to developer \n" +
+                    "9.ask => ask your doubts\n"+
+                    "10.edit => to create a sql file\n" +
+                    "11.run => to run the sql file \n"+
+                    "12.help => to see all commands\n"+
                     ".......work is going on ......";
                 addPrompt();
                 return;
@@ -176,7 +177,53 @@
                 addPrompt();
                 return;
             }
+                // run from here
+                if (lowerQuery === "run") {
+    let fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = ".ksql";
 
+    fileInput.onchange = e => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            const sqlCommands = evt.target.result;
+
+            try {
+                const result = db.exec(sqlCommands);
+
+                let outputText = "";
+                if (result.length > 0) {
+                    result.forEach(table => {
+                        outputText += table.columns.join(" | ") + "\n";
+                        outputText += "-".repeat(table.columns.join(" | ").length) + "\n";
+                        table.values.forEach(row => {
+                            outputText += row.join(" | ") + "\n";
+                        });
+                    });
+                }
+
+                const outDiv = document.createElement("div");
+                outDiv.textContent = outputText || "Commands executed successfully!";
+                document.getElementById("terminal").appendChild(outDiv);
+            } catch (err) {
+                const errDiv = document.createElement("div");
+                errDiv.textContent = "Error executing SQL: " + err.message;
+                document.getElementById("terminal").appendChild(errDiv);
+            }
+
+            addPrompt();
+        };
+
+        reader.readAsText(file);
+    };
+
+    fileInput.click();
+    return;
+}
+        //run upto
             if (lowerQuery.startsWith("save ")) {
                 const parts = query.trim().split(/\s+/);
                 if (parts.length === 2) {
@@ -210,11 +257,8 @@
                     return;
                 }
             }
+                if (lowerQuery === "edit") {                                                                                      window.open("https://hacker1514.github.io/sqlapp/edit.html","_self");                                             return;                                                                                                          }
 
-            if (lowerQuery === "exit") {
-                alert("Exit manually\nYour system is not supporting automatic exit.");
-                return;
-            }
                 if (lowerQuery === "request") {
                 window.open("https://hacker1514.github.io/python/contact.html","_self");
                 return;
